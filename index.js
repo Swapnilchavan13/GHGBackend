@@ -8,6 +8,7 @@ const app = express();
 const port = 8080;
 
 const Ghgdata = require("./models/Ghgmodel");
+const Client = require("./models/Clientdata")
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
@@ -30,6 +31,75 @@ app.use(bodyParser.json());
 
 app.use(cors({ origin: "*" }));
 
+
+// Add Client Data
+app.post('/addclient', async (req, res) => {
+  const { username, userId, password } = req.body;
+
+  try {
+    // Save the data to the database using the Client schema
+    const newClient = new Client({ username, userId, password });
+    await newClient.save();
+
+    console.log('Client added successfully!');
+    res.status(200).json({ message: 'Client added successfully!' });
+  } catch (error) {
+    console.error('Failed to add client:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+//Get client Details
+app.get('/getclients', async (req, res) => {
+  try {
+    // Fetch all clients from the database
+    const clients = await Client.find();
+    res.status(200).json(clients);
+  } catch (error) {
+    console.error('Failed to get clients:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Client Login
+app.post('/login', async (req, res) => {
+  const { userId, password } = req.body;
+
+  try {
+    // Check if the client with the provided userId and password exists
+    const client = await Client.findOne({ userId, password });
+
+    if (client) {
+      // Login successful
+      res.status(200).json({ message: 'Login successful' });
+    } else {
+      // Login failed
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Update data by ID
+app.put('/updateData/:id', async (req, res) => {
+  const { id } = req.params;
+  const newData = req.body;
+
+  try {
+    const updatedData = await Ghgdata.findByIdAndUpdate(id, newData, { new: true });
+
+    if (!updatedData) {
+      return res.status(404).json({ message: 'Data not found' });
+    }
+
+    res.status(200).json(updatedData);
+  } catch (error) {
+    console.error('Error updating data:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 // Get all data
 app.get("/getdata", async (req, res) => {
