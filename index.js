@@ -9,6 +9,8 @@ const port = 8080;
 
 const Ghgdata = require("./models/Ghgmodel");
 const Client = require("./models/Clientdata")
+const EmissionData = require('./models/Emission');
+
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
@@ -127,6 +129,17 @@ app.post("/addData", async (req, res) => {
     }
 });
 
+// Fetch data from MongoDB and send it to the client
+app.get('/getdata12', async (req, res) => {
+  try {
+    const data = await EmissionData.find();
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Delete request to remove a specific data entry
 app.delete("/deleteData/:id", async (req, res) => {
     try {
@@ -141,7 +154,38 @@ app.delete("/deleteData/:id", async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
+
+
+  // Save emission data
+  app.post('/savedata', async (req, res) => {
+    try {
+      const { rows } = req.body;
   
+      // Assuming each row in the front-end is one document in the backend
+      for (const row of rows) {
+        const newEmissionData = new EmissionData({
+          Name: row.selectedName,
+          Category: row.selectedCategory,
+          Country: row.selectedCountry,
+          Type: row.selectedType,
+          Brand: row.selectedBrand,
+          Description: row.description, // Assuming you have a 'description' field in your data
+          Group: row.group, // Assuming you have a 'group' field in your data
+          SKU: row.sku, // Assuming you have an 'sku' field in your data
+          Unit: row.unit, // Assuming you have a 'unit' field in your data
+          Consumption: row.consumption, // Assuming you have a 'consumption' field in your data
+          Emission: row.emission, // Assuming you have an 'emission' field in your data
+        });
+  
+        await newEmissionData.save();
+      }
+  
+      res.status(200).json({ success: true, message: 'Data saved successfully' });
+    } catch (error) {
+      console.error('Error saving data:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  });
 
 // Simple get request
 app.get("/", (req, res) => {
