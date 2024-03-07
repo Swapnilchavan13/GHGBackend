@@ -155,26 +155,28 @@ app.delete("/deleteData/:id", async (req, res) => {
     }
   });
 
-
   // Save emission data
   app.post('/savedata', async (req, res) => {
     try {
-      const { rows } = req.body;
+      const {  rows } = req.body;
   
       // Assuming each row in the front-end is one document in the backend
       for (const row of rows) {
         const newEmissionData = new EmissionData({
-          Name: row.selectedName,
-          Category: row.selectedCategory,
-          Country: row.selectedCountry,
-          Type: row.selectedType,
-          Brand: row.selectedBrand,
-          Description: row.description, // Assuming you have a 'description' field in your data
-          Group: row.group, // Assuming you have a 'group' field in your data
-          SKU: row.sku, // Assuming you have an 'sku' field in your data
-          Unit: row.unit, // Assuming you have a 'unit' field in your data
-          Consumption: row.consumption, // Assuming you have a 'consumption' field in your data
-          Emission: row.emission, // Assuming you have an 'emission' field in your data
+          selectedName: row.selectedName,
+          selectedCategory: row.selectedCategory,
+          selectedCountry: row.selectedCountry,
+          selectedType: row.selectedType,
+          selectedBrand: row.selectedBrand,
+          description: row.description,
+          group: row.group,
+          sku: row.sku,
+          unit: row.unit, 
+          consumption: row.distance, 
+          emission: row.emission, 
+          date: row.date,
+          distance: row.distance, 
+          result: row.result,
         });
   
         await newEmissionData.save();
