@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const emissionSchema = new mongoose.Schema({
+  userId: String,
   selectedName: String,
   selectedCategory: String,
   selectedCountry: String,

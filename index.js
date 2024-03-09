@@ -132,7 +132,9 @@ app.post("/addData", async (req, res) => {
 // Fetch data from MongoDB and send it to the client
 app.get('/getdata12', async (req, res) => {
   try {
-    const data = await EmissionData.find();
+    const { userId } = req.query;
+
+    const data = await EmissionData.find({ userId });
     res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -158,11 +160,15 @@ app.delete("/deleteData/:id", async (req, res) => {
   // Save emission data
   app.post('/savedata', async (req, res) => {
     try {
-      const {  rows } = req.body;
-  
+      const { rows } = req.body;
+
+        // Get userId from local storage
+    const userId = req.headers.authorization || ''; // Assuming userId is sent in the headers
+
       // Assuming each row in the front-end is one document in the backend
       for (const row of rows) {
         const newEmissionData = new EmissionData({
+          userId: userId,
           selectedName: row.selectedName,
           selectedCategory: row.selectedCategory,
           selectedCountry: row.selectedCountry,
