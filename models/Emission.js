@@ -15,6 +15,7 @@ const emissionSchema = new mongoose.Schema({
   consumption: String,
   emission: String,
   date: String,
+  date1: String,
   result: String,
 });
 

@@ -78,6 +78,7 @@ app.post('/login', async (req, res) => {
       // Login failed
       res.status(401).json({ message: 'Invalid credentials' });
     }
+    const { id } = req.params;
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -86,17 +87,16 @@ app.post('/login', async (req, res) => {
 
 // Update data by ID
 app.put('/updateData/:id', async (req, res) => {
-  const { id } = req.params;
   const newData = req.body;
 
-  try {
-    const updatedData = await Ghgdata.findByIdAndUpdate(id, newData, { new: true });
+  const updatedData = await Ghgdata.findByIdAndUpdate(id, newData, { new: true });
 
     if (!updatedData) {
       return res.status(404).json({ message: 'Data not found' });
     }
 
     res.status(200).json(updatedData);
+  try {
   } catch (error) {
     console.error('Error updating data:', error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -181,6 +181,7 @@ app.delete("/deleteData/:id", async (req, res) => {
           consumption: row.distance, 
           emission: row.emission, 
           date: row.date,
+          date1: row.date1,
           distance: row.distance, 
           result: row.result,
         });
