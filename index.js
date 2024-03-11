@@ -164,6 +164,8 @@ app.delete("/deleteData/:id", async (req, res) => {
 
         // Get userId from local storage
     const userId = req.headers.authorization || ''; // Assuming userId is sent in the headers
+    const allimgnvid = req.headers.authorization || ''; // Assuming userId is sent in the headers
+
 
       // Assuming each row in the front-end is one document in the backend
       for (const row of rows) {
@@ -184,6 +186,7 @@ app.delete("/deleteData/:id", async (req, res) => {
           date1: row.date1,
           distance: row.distance, 
           result: row.result,
+          image: allimgnvid
         });
   
         await newEmissionData.save();

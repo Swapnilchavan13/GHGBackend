@@ -17,6 +17,7 @@ const emissionSchema = new mongoose.Schema({
   date: String,
   date1: String,
   result: String,
+  image: String,
 });
 
 const EmissionData = mongoose.model('EmissionData', emissionSchema);
