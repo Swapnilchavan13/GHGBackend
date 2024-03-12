@@ -4,6 +4,10 @@ require("dotenv").config();
 const mongoose = require('mongoose');
 const cors = require("cors")
 
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
 const app = express();
 const port = 8080;
 
@@ -32,6 +36,37 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors({ origin: "*" }));
+
+// Set up Multer for handling file uploads
+const storage = multer.diskStorage({
+  destination: './public/uploads/',
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
+// Serve static files from the 'public' folder
+app.use(express.static('public'));
+
+// Handle image upload
+app.post('/upload', upload.single('image'), (req, res) => {
+  const imagePath = `/uploads/${req.file.filename}`;
+  res.json({ imagePath });
+});
+
+// Fetch all uploaded image paths
+app.get('/images', (req, res) => {
+  const uploadDir = path.join(__dirname, 'public', 'uploads');
+  try {
+    const imagePaths = fs.readdirSync(uploadDir).map((file) => `/uploads/${file}`);
+    res.json(imagePaths);
+  } catch (error) {
+    console.error('Error reading image directory:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 // Add Client Data
@@ -78,7 +113,6 @@ app.post('/login', async (req, res) => {
       // Login failed
       res.status(401).json({ message: 'Invalid credentials' });
     }
-    const { id } = req.params;
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -87,6 +121,7 @@ app.post('/login', async (req, res) => {
 
 // Update data by ID
 app.put('/updateData/:id', async (req, res) => {
+  const { id } = req.params;
   const newData = req.body;
 
   const updatedData = await Ghgdata.findByIdAndUpdate(id, newData, { new: true });
@@ -165,7 +200,6 @@ app.delete("/deleteData/:id", async (req, res) => {
         // Get userId from local storage
     const userId = req.headers.authorization || ''; // Assuming userId is sent in the headers
     const allimgnvid = req.headers.authorization || ''; // Assuming userId is sent in the headers
-
 
       // Assuming each row in the front-end is one document in the backend
       for (const row of rows) {
