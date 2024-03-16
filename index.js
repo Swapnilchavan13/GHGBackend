@@ -14,6 +14,7 @@ const port = 8080;
 const Ghgdata = require("./models/Ghgmodel");
 const Client = require("./models/Clientdata")
 const EmissionData = require('./models/Emission');
+const User = require('./models/Userdata');
 
 
 // MongoDB Connection
@@ -98,6 +99,49 @@ app.get('/getclients', async (req, res) => {
   }
 });
 
+// Add User Data
+app.post('/adduser', async (req, res) => {
+  const { clientId, username, userId, password } = req.body;
+
+  try {
+    // Save the data to the database using the Client schema
+    const newUser = new User({ clientId, username, userId, password });
+    await newUser.save();
+
+    console.log('User added successfully!');
+    res.status(200).json({ message: 'User added successfully!' });
+  } catch (error) {
+    console.error('Failed to add User:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+ //Get Uset Details
+// app.get('/getusers', async (req, res) => {
+//   try {
+//     // Fetch all clients from the database
+//     const users = await User.find();
+//     res.status(200).json(users);
+//   } catch (error) {
+//     console.error('Failed to get users:', error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// });
+
+// Define the route to fetch users based on client ID
+app.get('/getusers', async (req, res) => {
+  try {
+    const { clientId } = req.query;
+    // Fetch users based on the provided client ID
+    const users = await User.find({ clientId });
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Failed to get users:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 // Client Login
 app.post('/login', async (req, res) => {
   const { userId, password } = req.body;
@@ -109,6 +153,27 @@ app.post('/login', async (req, res) => {
     if (client) {
       // Login successful
       res.status(200).json({ message: 'Login successful' });
+    } else {
+      // Login failed
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// User Login
+app.post('/userlogin', async (req, res) => {
+  const { userId, password } = req.body;
+
+  try {
+    // Check if the client with the provided userId and password exists
+    const user = await User.findOne({ userId, password });
+
+    if (user) {
+      // Login successful
+      res.status(200).json({ message: 'User Login successful' });
     } else {
       // Login failed
       res.status(401).json({ message: 'Invalid credentials' });
@@ -219,7 +284,7 @@ app.delete("/deleteData/:id", async (req, res) => {
           date1: row.date1,
           distance: row.distance, 
           result: row.result,
-          image: latestImagePath,
+          image: row.image,
         });
   
         await newEmissionData.save();
