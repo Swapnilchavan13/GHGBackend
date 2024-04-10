@@ -71,12 +71,13 @@ app.get('/images', (req, res) => {
 
 
 // Add Client Data
-app.post('/addclient', async (req, res) => {
+app.post('/addclient', upload.single('logoimg'), async (req, res) => {
   const { username, userId, password } = req.body;
+  const logoimg = req.file ? `/uploads/${req.file.filename}` : null; // Save the path of the uploaded image
 
   try {
     // Save the data to the database using the Client schema
-    const newClient = new Client({ username, userId, password });
+    const newClient = new Client({ username, userId, password, logoimg });
     await newClient.save();
 
     console.log('Client added successfully!');
@@ -86,6 +87,7 @@ app.post('/addclient', async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 //Get client Details
 app.get('/getclients', async (req, res) => {
