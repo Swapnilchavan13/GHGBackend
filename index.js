@@ -3,7 +3,6 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 const mongoose = require('mongoose');
 const cors = require("cors")
-const https = require('https');
 
 const multer = require('multer');
 const path = require('path');
@@ -38,11 +37,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors({ origin: "*" }));
-
-const options = {
-    key: fs.readFileSync('/etc/ssl/private/server.key'), // Path to your SSL private key
-    cert: fs.readFileSync('/etc/ssl/certs/server.crt')   // Path to your SSL certificate
-};
 
 // Set up Multer for handling file uploads
 const storage = multer.diskStorage({
@@ -312,7 +306,7 @@ app.get("/", (req, res) => {
 
 // Start the Server
 connectDB().then(() => {
-    https.createServer(options, app).listen(port, () => {
-        console.log(`Example app listening on port ${port} over HTTPS`);
+    app.listen(port, () => {
+        console.log(`Example app listening on port ${port}`);
     });
 });
