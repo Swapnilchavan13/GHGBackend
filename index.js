@@ -299,6 +299,28 @@ app.delete("/deleteData/:id", async (req, res) => {
     }
   });
 
+  // Delete emission data
+app.delete('/deleteEmissionData', async (req, res) => {
+  try {
+    const { id } = req.query;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID is required' });
+    }
+
+    const result = await EmissionData.findByIdAndDelete(id);
+
+    if (!result) {
+      return res.status(404).json({ success: false, message: 'Data not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Data deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting data:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Simple get request
 app.get("/", (req, res) => {
     res.send("Hello GHG data");
