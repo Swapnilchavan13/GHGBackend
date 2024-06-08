@@ -103,11 +103,11 @@ app.get('/getclients', async (req, res) => {
 
 // Add User Data
 app.post('/adduser', async (req, res) => {
-  const { clientId, username, userId, password } = req.body;
+  const { clientId, username, userId, password, emailid } = req.body;
 
   try {
     // Save the data to the database using the Client schema
-    const newUser = new User({ clientId, username, userId, password });
+    const newUser = new User({ clientId, username, userId, password, emailid });
     await newUser.save();
 
     console.log('User added successfully!');
@@ -118,17 +118,17 @@ app.post('/adduser', async (req, res) => {
   }
 });
 
- //Get Uset Details
-// app.get('/getusers', async (req, res) => {
-//   try {
-//     // Fetch all clients from the database
-//     const users = await User.find();
-//     res.status(200).json(users);
-//   } catch (error) {
-//     console.error('Failed to get users:', error);
-//     res.status(500).json({ message: 'Internal Server Error' });
-//   }
-// });
+//  Get All User Details
+app.get('/allusers', async (req, res) => {
+  try {
+    // Fetch all clients from the database
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Failed to get users:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 // Define the route to fetch users based on client ID
 app.get('/getusers', async (req, res) => {
