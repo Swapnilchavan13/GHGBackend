@@ -15,6 +15,7 @@ const Ghgdata = require("./models/Ghgmodel");
 const Client = require("./models/Clientdata")
 const EmissionData = require('./models/Emission');
 const User = require('./models/Userdata');
+const News = require('./models/News');
 
 
 // MongoDB Connection
@@ -70,6 +71,43 @@ app.get('/images', (req, res) => {
 });
 
 
+//////CMS//////
+
+// News Routes
+
+
+app.get('/news', async (req, res) => {
+  try {
+    const newsData = await News.find().sort({ createdAt: -1 });
+    res.json(newsData);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/addnews', upload.single('image'), async (req, res) => {
+  const { title, content } = req.body;
+  const image = req.file ? `/uploads/${req.file.filename}` : null;
+
+  if (!image) {
+    return res.status(400).json({ message: 'Image is required' });
+  }
+
+  const newNews = new News({
+    title,
+    image,
+    content,
+  });
+
+  try {
+    const savedNews = await newNews.save();
+    res.status(201).json(savedNews);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
 // Add Client Data
 app.post('/addclient', upload.single('logoimg'), async (req, res) => {
   const { username, userId, password } = req.body;
@@ -101,12 +139,19 @@ app.get('/getclients', async (req, res) => {
   }
 });
 
-// Add User Data
 app.post('/adduser', async (req, res) => {
   const { clientId, username, userId, password, emailid } = req.body;
 
   try {
-    // Save the data to the database using the Client schema
+    // Check if the emailid already exists in the database
+    const existingUser = await User.findOne({ emailid });
+
+    if (existingUser) {
+      console.log('User with this email already exists!');
+      return res.status(400).json({ message: 'User with this email already exists!' });
+    }
+
+    // If emailid is unique, save the data to the database using the User schema
     const newUser = new User({ clientId, username, userId, password, emailid });
     await newUser.save();
 
@@ -117,6 +162,7 @@ app.post('/adduser', async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 //  Get All User Details
 app.get('/allusers', async (req, res) => {
