@@ -85,6 +85,20 @@ app.get('/news', async (req, res) => {
   }
 });
 
+// Fetch a news article by ID
+app.get('/news/:id', async (req, res) => {
+  try {
+    const newsId = req.params.id;
+    const newsArticle = await News.findById(newsId);
+    if (!newsArticle) {
+      return res.status(404).json({ message: 'News article not found' });
+    }
+    res.json(newsArticle);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.post('/addnews', upload.single('image'), async (req, res) => {
   const { title, content } = req.body;
   const image = req.file ? `/uploads/${req.file.filename}` : null;
