@@ -16,6 +16,7 @@ const Client = require("./models/Clientdata")
 const EmissionData = require('./models/Emission');
 const User = require('./models/Userdata');
 const News = require('./models/News');
+const Product = require("./models/Product");
 
 
 // MongoDB Connection
@@ -120,6 +121,111 @@ app.post('/addnews', upload.single('image'), async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+
+// Handle product addition with multiple images
+app.post('/addproduct', upload.array('images', 3), async (req, res) => {
+  const { name, price, description, rating, category, quantity } = req.body;
+  const images = req.files.map(file => `/uploads/${file.filename}`); // Extract image paths
+
+  if (images.length === 0) {
+    return res.status(400).json({ message: 'At least one image is required' });
+  }
+
+  try {
+    const newProduct = new Product({
+      name,
+      images,
+      price,
+      description,
+      rating,
+      category,
+      quantity
+    });
+
+    const savedProduct = await newProduct.save();
+    res.status(201).json(savedProduct);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Get all products
+app.get('/products', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Get a product by ID
+app.get('/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.status(200).json(product);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Update a product by ID
+app.put('/products/:id', upload.array('images', 3), async (req, res) => {
+  const { name, price, description, rating, category, quantity } = req.body;
+  const images = req.files ? req.files.map(file => `/uploads/${file.filename}`) : undefined;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, {
+      name,
+      images: images || undefined,
+      price,
+      description,
+      rating,
+      category,
+      quantity
+    }, { new: true });
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Delete a product by ID
+app.delete('/products/:id', async (req, res) => {
+  try {
+    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+    if (!deletedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Optionally delete images from the file system
+    const uploadDir = path.join(__dirname, 'public', 'uploads');
+    deletedProduct.images.forEach(image => {
+      const imagePath = path.join(uploadDir, path.basename(image));
+      fs.unlink(imagePath, err => {
+        if (err) console.error(`Failed to delete image: ${imagePath}`);
+      });
+    });
+
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 
 // Add Client Data
