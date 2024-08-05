@@ -12,6 +12,7 @@ const dataSchema = new mongoose.Schema({
     Unit: String,
     Emission: Number,
     dynamicFields: Object,  // Dynamic field to store additional data
+    mainCategory: String,   // New field for main category
 });
 
 const Ghgdata = mongoose.model('Ghgdata', dataSchema);

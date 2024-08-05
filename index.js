@@ -453,6 +453,7 @@ app.delete("/deleteData/:id", async (req, res) => {
           distance: row.distance, 
           result: row.result,
           image: row.image,
+          mainCategory: row.mainCategory, // Include the mainCategory field here
         });
   
         await newEmissionData.save();

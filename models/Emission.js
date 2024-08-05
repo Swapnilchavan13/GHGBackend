@@ -18,6 +18,7 @@ const emissionSchema = new mongoose.Schema({
   date1: String,
   result: String,
   image: String,
+  mainCategory: String,  // New field for main category
 });
 
 const EmissionData = mongoose.model('EmissionData', emissionSchema);
