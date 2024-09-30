@@ -11,13 +11,13 @@ const fs = require('fs');
 const app = express();
 const port = 8080;
 
+const Isnregistration = require("./models/Isnregistration"); // Correct path to the model
 const Ghgdata = require("./models/Ghgmodel");
 const Client = require("./models/Clientdata")
 const EmissionData = require('./models/Emission');
 const User = require('./models/Userdata');
 const News = require('./models/News');
 const Product = require("./models/Product");
-const Isnregistration = require('./models/Isnregistration.js'); // Correct path to the model
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
