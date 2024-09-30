@@ -77,7 +77,7 @@ app.get('/images', (req, res) => {
 // POST request to save registration data
 app.post('/isn-registration', async (req, res) => {
   try {
-    const registrationData = new IsnRegistration(req.body);
+    const registrationData = new Isnregistration(req.body);
     await registrationData.save();
     res.status(201).json({ message: 'Registration successful', data: registrationData });
   } catch (error) {
@@ -88,7 +88,7 @@ app.post('/isn-registration', async (req, res) => {
 // GET request to fetch all registration data
 app.get('/getisn-registration', async (req, res) => {
   try {
-    const registrations = await IsnRegistration.find();
+    const registrations = await Isnregistration.find();
     res.json(registrations);
   } catch (error) {
     res.status(500).json({ message: error.message });
