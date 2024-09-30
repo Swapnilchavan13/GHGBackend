@@ -17,6 +17,8 @@ const EmissionData = require('./models/Emission');
 const User = require('./models/Userdata');
 const News = require('./models/News');
 const Product = require("./models/Product");
+const IsnRegistration = require("./models/Isnregistration"); // Import the IsnRegistration model
+
 
 
 // MongoDB Connection
@@ -68,6 +70,30 @@ app.get('/images', (req, res) => {
   } catch (error) {
     console.error('Error reading image directory:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// ISN Registration Routes
+
+// POST request to save registration data
+app.post('/isn-registration', async (req, res) => {
+  try {
+    const registrationData = new IsnRegistration(req.body);
+    await registrationData.save();
+    res.status(201).json({ message: 'Registration successful', data: registrationData });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET request to fetch all registration data
+app.get('/getisn-registration', async (req, res) => {
+  try {
+    const registrations = await IsnRegistration.find();
+    res.json(registrations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
