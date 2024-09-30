@@ -17,7 +17,7 @@ const EmissionData = require('./models/Emission');
 const User = require('./models/Userdata');
 const News = require('./models/News');
 const Product = require("./models/Product");
-const IsnRegistration = require("./models/Isnregistration"); // Import the IsnRegistration model
+const Isnregistration = require('./models/Isnregistration'); // Correct path to the model
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
