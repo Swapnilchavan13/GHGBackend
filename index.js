@@ -11,7 +11,7 @@ const fs = require('fs');
 const app = express();
 const port = 8080;
 
-// const Isnregistration = require("./models/Isnregistration"); // Correct path to the model
+const Isnregistration = require("./models/Isnregistration"); // Correct path to the model
 const Ghgdata = require("./models/Ghgmodel");
 const Client = require("./models/Clientdata")
 const EmissionData = require('./models/Emission');
@@ -85,15 +85,15 @@ app.get('/images', (req, res) => {
 //   }
 // });
 
-// // GET request to fetch all registration data
-// app.get('/getisn-registration', async (req, res) => {
-//   try {
-//     const registrations = await Isnregistration.find();
-//     res.json(registrations);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+// GET request to fetch all registration data
+app.get('/getisn-registration', async (req, res) => {
+  try {
+    const registrations = await Isnregistration.find();
+    res.json(registrations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 
 //////CMS//////
