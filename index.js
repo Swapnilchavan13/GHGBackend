@@ -74,16 +74,16 @@ app.get('/images', (req, res) => {
 
 // ISN Registration Routes
 
-// // POST request to save registration data
-// app.post('/isn-registration', async (req, res) => {
-//   try {
-//     const registrationData = new Isnregistration(req.body);
-//     await registrationData.save();
-//     res.status(201).json({ message: 'Registration successful', data: registrationData });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+// POST request to save registration data
+app.post('/isn-registration', async (req, res) => {
+  try {
+    const registrationData = new Isnregistration(req.body);
+    await registrationData.save();
+    res.status(201).json({ message: 'Registration successful', data: registrationData });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // GET request to fetch all registration data
 app.get('/getisn-registration', async (req, res) => {
