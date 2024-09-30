@@ -11,7 +11,7 @@ const fs = require('fs');
 const app = express();
 const port = 8080;
 
-const Isnregistration = require("./models/Isnregistration"); // Correct path to the model
+// const Isnregistration = require("./models/Isnregistration"); 
 const Ghgdata = require("./models/Ghgmodel");
 const Client = require("./models/Clientdata")
 const EmissionData = require('./models/Emission');
@@ -74,26 +74,26 @@ app.get('/images', (req, res) => {
 
 // ISN Registration Routes
 
-// POST request to save registration data
-app.post('/isn-registration', async (req, res) => {
-  try {
-    const registrationData = new Isnregistration(req.body);
-    await registrationData.save();
-    res.status(201).json({ message: 'Registration successful', data: registrationData });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+// // POST request to save registration data
+// app.post('/isn-registration', async (req, res) => {
+//   try {
+//     const registrationData = new Isnregistration(req.body);
+//     await registrationData.save();
+//     res.status(201).json({ message: 'Registration successful', data: registrationData });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
-// GET request to fetch all registration data
-app.get('/getisn-registration', async (req, res) => {
-  try {
-    const registrations = await Isnregistration.find();
-    res.json(registrations);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+// // GET request to fetch all registration data
+// app.get('/getisn-registration', async (req, res) => {
+//   try {
+//     const registrations = await Isnregistration.find();
+//     res.json(registrations);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 
 //////CMS//////
