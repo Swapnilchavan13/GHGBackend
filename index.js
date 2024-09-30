@@ -19,8 +19,6 @@ const News = require('./models/News');
 const Product = require("./models/Product");
 const IsnRegistration = require("./models/Isnregistration"); // Import the IsnRegistration model
 
-
-
 // MongoDB Connection
 mongoose.set("strictQuery", false);
 
