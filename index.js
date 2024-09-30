@@ -11,7 +11,7 @@ const fs = require('fs');
 const app = express();
 const port = 8080;
 
-const Isnregistration = require("./models/Isnregistration"); // Correct path to the model
+const Isnregistration = require("./models/Registration"); // Correct path to the model
 const Ghgdata = require("./models/Ghgmodel");
 const Client = require("./models/Clientdata")
 const EmissionData = require('./models/Emission');

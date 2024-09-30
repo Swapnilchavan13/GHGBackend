@@ -16,6 +16,6 @@ const isnRegistrationSchema = new mongoose.Schema({
 });
 
 // Create a model for ISN Registration
-const Isnregistration = mongoose.model('Isnregistration', isnRegistrationSchema);
+const Registration = mongoose.model('Registration', isnRegistrationSchema);
 
-module.exports = Isnregistration;
+module.exports = Registration;
