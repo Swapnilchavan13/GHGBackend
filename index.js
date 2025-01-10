@@ -490,6 +490,47 @@ app.delete("/deleteData/:id", async (req, res) => {
     }
   });
 
+  // Edit emission data
+  app.put('/editEmissionData', async (req, res) => {
+    try {
+      const { id, updatedData } = req.body;
+  
+      if (!id || !updatedData || !updatedData.distance) {
+        return res.status(400).json({ success: false, message: 'ID and distance are required' });
+      }
+  
+      // Find the current data by ID
+      const currentData = await EmissionData.findById(id);
+  
+      if (!currentData) {
+        return res.status(404).json({ success: false, message: 'Data not found' });
+      }
+  
+      // Calculate the emission value based on the result and current distance
+      const currentResult = parseFloat(currentData.result);
+      const currentDistance = parseFloat(currentData.distance);
+  
+      // Calculate the emission per distance unit
+      const emissionPerUnit = currentResult / currentDistance;
+  
+      // Calculate the new result based on the updated distance
+      const newDistance = parseFloat(updatedData.distance);
+      const newResult = emissionPerUnit * newDistance;
+  
+      // Update the updatedData object with the new result and distance
+      updatedData.result = newResult;
+      updatedData.distance = newDistance;
+  
+      // Update the data in the database
+      const updatedEmissionData = await EmissionData.findByIdAndUpdate(id, updatedData, { new: true });
+  
+      res.status(200).json({ success: true, message: 'Data updated successfully', data: updatedEmissionData });
+    } catch (error) {
+      console.error('Error updating data:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  });
+  
   // Delete emission data
 app.delete('/deleteEmissionData', async (req, res) => {
   try {
