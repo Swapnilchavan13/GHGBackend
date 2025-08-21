@@ -19,6 +19,15 @@ const User = require('./models/Userdata');
 const News = require('./models/News');
 const Product = require("./models/Product");
 
+
+const Admin = require("./models/Admin")
+const EmissionEntry = require('./models/EmissionEntry'); // import schema
+const Business = require("./models/Business");
+
+const Project = require("./models/Project")
+
+
+
 // MongoDB Connection
 mongoose.set("strictQuery", false);
 
@@ -550,6 +559,208 @@ app.delete('/deleteEmissionData', async (req, res) => {
   } catch (error) {
     console.error('Error deleting data:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+
+//ECOM APIS
+
+// Admin Register
+ 
+app.post("/admin/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // check if admin exists
+    const existingAdmin = await Admin.findOne({ username });
+    if (existingAdmin) {
+      return res.status(400).json({ message: "Admin already exists" });
+    }
+
+    const newAdmin = new Admin({ username, password, businesses: [] });
+    await newAdmin.save();
+
+    res.status(201).json({ message: "Admin registered successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ================== ADMIN ==================
+
+// Admin Register
+app.post('/admin/register', async (req, res) => {
+    const { username, password } = req.body;
+    const exists = await Admin.findOne({ username });
+    if (exists) return res.status(400).json({ message: "Admin already exists" });
+
+    const admin = new Admin({ username, password });
+    await admin.save();
+    res.json({ message: "Admin registered successfully", admin });
+});
+
+// Admin Login
+app.post('/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+    const admin = await Admin.findOne({ username, password });
+    if (!admin) return res.status(400).json({ message: "Invalid credentials" });
+
+    res.json({ message: "Login successful", adminId: admin._id });
+});
+
+
+// ================== BUSINESS ==================
+
+// Create Business (by Admin)
+app.post('/business/create', async (req, res) => {
+    const { adminId, name, username, password } = req.body;
+
+    const exists = await Business.findOne({ username });
+    if (exists) return res.status(400).json({ message: "Business username already exists" });
+
+    const business = new Business({ adminId, name, username, password });
+    await business.save();
+    res.json({ message: "Business created successfully", business });
+});
+
+// Business Login
+app.post('/business/login', async (req, res) => {
+    const {username, password } = req.body;
+    const business = await Business.findOne({ username, password });
+    if (!business) return res.status(400).json({ message: "Invalid credentials" });
+
+    res.json({ message: "Login successful",adminId: business.adminId, businessId: business._id, businessName: business.username });
+});
+
+
+// ================== EMISSIONS ==================
+
+// Add Emission (by Business)
+app.post('/emission/add', async (req, res) => {
+    const { businessId, emissionType, amount } = req.body;
+    const emission = new EmissionEntry({ businessId, emissionType, amount });
+    await emission.save();
+    res.json({ message: "Emission added successfully", emission });
+});
+
+// Get emissions by username
+app.get('/emission/:username', async (req, res) => {
+    const { username } = req.params;  // Changed from userName to username
+    const emissions = await EmissionEntry.find({ username });  // Changed from userName to username
+    res.json(emissions);
+});
+
+// Get emissions by username
+app.get('/admin/emission/:adminId', async (req, res) => {
+    const { adminId } = req.params;  // Changed from userName to username
+    const emissions = await EmissionEntry.find({ adminId });  // Changed from userName to username
+    res.json(emissions);
+});
+
+// Get All Emissions for Admin (using businessId)
+app.get('/admin/emissions/:adminId', async (req, res) => {
+    try {
+        const { adminId } = req.params;
+        
+        // Get all businesses under this admin
+        const businesses = await Business.find({ adminId });
+        
+        // Extract business IDs
+        const businessIds = businesses.map(b => b._id.toString());
+        
+        // Find emissions by businessId
+        const emissions = await EmissionEntry.find({ 
+            businessId: { $in: businessIds } 
+        });
+        
+        res.json(emissions);
+    } catch (error) {
+        console.error("Error fetching admin emissions:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+// To get businesses by adminId
+app.post('/businesses/by-admin', async (req, res) => {
+  const { adminId } = req.body;
+  if (!adminId) return res.status(400).json({ message: 'adminId required' });
+  const businesses = await Business.find({ adminId });
+  res.json({ businesses });
+});
+
+
+
+
+app.post('/emissions', async (req, res) => {
+  try {
+    const data = req.body;
+
+    // Validate required fields (example)
+    if (!data.username || !data.transactionType) {
+      return res.status(400).json({ error: 'username and transactionType are required' });
+    }
+
+    const newEntry = new EmissionEntry(data);
+    await newEntry.save();
+
+    res.status(201).json({ message: 'Entry saved successfully', entry: newEntry });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+app.get("/admin/emissions/:adminId", async (req, res) => {
+  const { adminId } = req.params;
+
+  try {
+    // Find all businesses for this admin
+    const businesses = await Business.find({ adminId }).select("_id");
+
+    const businessIds = businesses.map((b) => b._id);
+
+    // Find all emissions for those businesses
+    const emissions = await EmissionEntry.find({ businessId: { $in: businessIds } });
+
+    res.json(emissions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+app.get('/ecomemissions', async (req, res) => {
+  try {
+    const entries = await EmissionEntry.find(); // fetch all entries
+    res.status(200).json(entries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// POST → Add new project
+app.post("/addprojects", async (req, res) => {
+  try {
+    const project = new Project(req.body);
+    await project.save();
+    res.status(201).json(project);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// GET → Fetch all projects
+app.get("/getprojects", async (req, res) => {
+  try {
+    const projects = await Project.find().sort({ enteredTime: -1 });
+    res.json(projects);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
