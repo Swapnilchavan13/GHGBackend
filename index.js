@@ -26,6 +26,9 @@ const Business = require("./models/Business");
 
 const Project = require("./models/Project")
 
+const Blog = require("./models/Blog"); // import the Blog model
+
+
 
 
 // MongoDB Connection
@@ -49,7 +52,7 @@ app.use(bodyParser.json());
 
 app.use(cors({ origin: "*" }));
 
-// Set up Multer for handling file uploads
+// Multer storage (all files go into ./public/uploads/)
 const storage = multer.diskStorage({
   destination: './public/uploads/',
   filename: (req, file, cb) => {
@@ -59,8 +62,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Serve static files from the 'public' folder
 app.use(express.static('public'));
+
+
 
 // Handle image upload
 app.post('/upload', upload.single('image'), (req, res) => {
@@ -743,16 +747,46 @@ app.get('/ecomemissions', async (req, res) => {
 });
 
 
-// POST → Add new project
-app.post("/addprojects", async (req, res) => {
-  try {
-    const project = new Project(req.body);
-    await project.save();
-    res.status(201).json(project);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+app.post(
+  "/addprojects",
+  upload.fields([
+    { name: "photo", maxCount: 1 },    // only 1 image
+    { name: "video", maxCount: 1 },    // only 1 video
+    { name: "document", maxCount: 1 }  // only 1 document
+  ]),
+  async (req, res) => {
+    try {
+      const { body, files } = req;
+
+      const newProject = new Project({
+        projectName: body.projectName,
+        description: body.description,
+        projectType: body.projectType,
+        location: body.location,
+        methodology: body.methodology,
+        rating: body.rating,
+        price: body.price,
+        quantity: body.quantity,
+        coBenefits: body.coBenefits,
+        verification: body.verification,
+        featured: body.featured === "true",
+        claimScoreView: body.claimScoreView,
+        registry: body.registry,
+        photo: files.photo ? `/uploads/${files.photo[0].filename}` : null,
+        video: files.video ? `/uploads/${files.video[0].filename}` : null,
+        document: files.document ? `/uploads/${files.document[0].filename}` : null,
+      });
+
+      await newProject.save();
+      res.status(201).json(newProject);
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: error.message });
+    }
   }
-});
+);
+
+
 
 // GET → Fetch all projects
 app.get("/getprojects", async (req, res) => {
@@ -763,6 +797,88 @@ app.get("/getprojects", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+app.put(
+  "/updateproject/:id",
+  upload.fields([
+    { name: "photo", maxCount: 1 },
+    { name: "video", maxCount: 1 },
+    { name: "document", maxCount: 1 }
+  ]),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { body, files } = req;
+
+      const project = await Project.findById(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Replace fields only if new files are uploaded
+      if (files.photo) {
+        project.photo = `/uploads/${files.photo[0].filename}`;
+      }
+      if (files.video) {
+        project.video = `/uploads/${files.video[0].filename}`;
+      }
+      if (files.document) {
+        project.document = `/uploads/${files.document[0].filename}`;
+      }
+
+      // Update other fields from body
+      project.projectName = body.projectName || project.projectName;
+      project.description = body.description || project.description;
+      project.projectType = body.projectType || project.projectType;
+      project.location = body.location || project.location;
+      project.methodology = body.methodology || project.methodology;
+      project.rating = body.rating || project.rating;
+      project.price = body.price || project.price;
+      project.quantity = body.quantity || project.quantity;
+      project.coBenefits = body.coBenefits || project.coBenefits;
+      project.verification = body.verification || project.verification;
+      project.featured = body.featured ? body.featured === "true" : project.featured;
+      project.claimScoreView = body.claimScoreView || project.claimScoreView;
+      project.registry = body.registry || project.registry;
+
+      await project.save();
+      res.json(project);
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: error.message });
+    }
+  }
+);
+
+
+// ✅ POST route to add a blog
+app.post("/addblogs", async (req, res) => {
+  try {
+    const { title, subtitle, category, description, views, image, link } = req.body;
+
+    // Validate required fields
+    if (!title || !category || !image) {
+      return res.status(400).json({ error: "Title, Category, and Image are required." });
+    }
+
+    const newBlog = new Blog({
+      title,
+      subtitle,
+      category,
+      description,
+      views,
+      image,
+      link,
+    });
+
+    await newBlog.save();
+    res.status(201).json({ message: "Blog added successfully", blog: newBlog });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add blog", details: error.message });
+  }
+});
+
 
 // Simple get request
 app.get("/", (req, res) => {

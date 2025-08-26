@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Create a schema for Carbon Projects
 const projectSchema = new mongoose.Schema({
   projectName: { type: String, required: true },
   description: String,
@@ -13,8 +12,15 @@ const projectSchema = new mongoose.Schema({
   coBenefits: String,
   verification: String,
   featured: { type: Boolean, default: false },
-  enteredTime: { type: Date, default: Date.now } // Auto timestamp
+  photo: String,    // single image
+  video: String,    // single video
+  document: String, // single document
+  claimScoreView: String,
+  registry: String,
+  enteredTime: { type: Date, default: Date.now }
 });
+
+
 
 // Create a model for Carbon Projects
 const Project = mongoose.model('Project', projectSchema);
