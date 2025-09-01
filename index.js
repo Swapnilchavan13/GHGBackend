@@ -28,6 +28,9 @@ const Project = require("./models/Project")
 
 const Blog = require("./models/Blog"); // import the Blog model
 
+const Buyer = require("./models/Buyer"); // import Buyer model
+
+
 
 
 
@@ -876,6 +879,57 @@ app.post("/addblogs", async (req, res) => {
     res.status(201).json({ message: "Blog added successfully", blog: newBlog });
   } catch (error) {
     res.status(500).json({ error: "Failed to add blog", details: error.message });
+  }
+});
+
+
+// Add or update single buyer
+app.post("/addbuyer", async (req, res) => {
+  try {
+    const buyers = Array.isArray(req.body) ? req.body : [req.body];
+
+    let inserted = [];
+    let skipped = [];
+
+    for (let buyer of buyers) {
+      if (!buyer.email && !buyer.buyerName) continue;
+
+      const existing = await Buyer.findOne({
+        email: buyer.email,
+        buyerName: buyer.buyerName,
+      });
+
+      if (existing) {
+        skipped.push(buyer);
+      } else {
+        const newBuyer = new Buyer(buyer);
+        await newBuyer.save();
+        inserted.push(newBuyer);
+      }
+    }
+
+    res.json({
+      message: "Buyers processed",
+      inserted: inserted.length,
+      skipped: skipped.length,
+      insertedData: inserted,
+      skippedData: skipped,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// GET: Fetch all buyers
+app.get("/getbuyers", async (req, res) => {
+  try {
+    const buyers = await Buyer.find();
+    res.status(200).json({ success: true, data: buyers });
+  } catch (err) {
+    console.error("Error fetching buyers:", err);
+    res.status(500).json({ success: false, message: "Error fetching buyers" });
   }
 });
 
