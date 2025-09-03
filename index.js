@@ -801,6 +801,21 @@ app.get("/getprojects", async (req, res) => {
   }
 });
 
+app.get("/getprojects/:id", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    res.json(project);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 
 app.put(
   "/updateproject/:id",
