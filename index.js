@@ -699,24 +699,68 @@ app.post('/businesses/by-admin', async (req, res) => {
 
 
 
-app.post('/emissions', async (req, res) => {
+app.post("/emissions", async (req, res) => {
   try {
     const data = req.body;
 
-    // Validate required fields (example)
-    if (!data.username || !data.transactionType) {
-      return res.status(400).json({ error: 'username and transactionType are required' });
+    // ✅ Basic required validation (can expand as needed)
+    const requiredFields = [
+      "adminId",
+      "username",
+      "orderId",
+      "orderDate",
+      "transportMode",
+    ];
+
+    const missing = requiredFields.filter((f) => !data[f]);
+    if (missing.length > 0) {
+      return res.status(400).json({
+        error: `Missing required fields: ${missing.join(", ")}`,
+      });
     }
 
-    const newEntry = new EmissionEntry(data);
+    // ✅ Optional: auto-calculate total emissions if factors are provided
+    let orderCarbonFootprint = 0;
+
+    const {
+      productEmissionFactor = 0,
+      packagingEmissionFactor = 0,
+      transportEmissionFactor = 0,
+      packagingWeightKg = 0,
+      distanceKm = 0,
+      returnFlag = false,
+      returnDistanceKm = 0,
+    } = data;
+
+    // Example calculation (you can adjust formula as per your model)
+    const productEmission = productEmissionFactor || 0;
+    const packagingEmission = packagingWeightKg * packagingEmissionFactor;
+    const logisticsEmission = (distanceKm / 1000) * transportEmissionFactor * 1; // tonne-km approx.
+
+    const returnEmission = returnFlag
+      ? (returnDistanceKm / 1000) * transportEmissionFactor * 1
+      : 0;
+
+    orderCarbonFootprint =
+      productEmission + packagingEmission + logisticsEmission + returnEmission;
+
+    const newEntry = new EmissionEntry({
+      ...data,
+      orderCarbonFootprint,
+    });
+
     await newEntry.save();
 
-    res.status(201).json({ message: 'Entry saved successfully', entry: newEntry });
+    res.status(201).json({
+      message: "Emission entry saved successfully",
+      entry: newEntry,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("❌ Error saving emission entry:", err);
+    res.status(500).json({ error: "Server error while saving emission entry" });
   }
 });
+
 
 
 app.get("/admin/emissions/:adminId", async (req, res) => {
@@ -733,6 +777,7 @@ app.get("/admin/emissions/:adminId", async (req, res) => {
 
     res.json(emissions);
   } catch (err) {
+  
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
