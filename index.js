@@ -270,19 +270,45 @@ app.delete('/products/:id', async (req, res) => {
 
 // Add Client Data
 app.post('/addclient', upload.single('logoimg'), async (req, res) => {
-  const { username, userId, password } = req.body;
-  const logoimg = req.file ? `/uploads/${req.file.filename}` : null; // Save the path of the uploaded image
+
+  const {
+    firstName,
+    lastName,
+    contactNumber,
+    email,
+    organization,
+    sector,
+    website,
+    plan,
+    password
+  } = req.body;
+
+  const logoimg = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
-    // Save the data to the database using the Client schema
-    const newClient = new Client({ username, userId, password, logoimg });
+
+    const newClient = new Client({
+      firstName,
+      lastName,
+      contactNumber,
+      email,
+      organization,
+      sector,
+      website,
+      plan,
+      password,
+      logoimg
+    });
+
     await newClient.save();
 
-    console.log('Client added successfully!');
-    res.status(200).json({ message: 'Client added successfully!' });
+    res.status(200).json({ message: "Client registered successfully" });
+
   } catch (error) {
-    console.error('Failed to add client:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+
+    console.error("Error registering client:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+
   }
 });
 
